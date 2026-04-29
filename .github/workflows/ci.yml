@@ -39,18 +39,46 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -e .
 
+      - name: Tool versions
+        run: |
+          python --version
+          pip --version
+          ruff --version
+          mypy --version
+          pytest --version
+
       - name: Ruff (lint)
-        run: ruff check src tests
+        run: |
+          ruff check src tests \
+            --output-format=full \
+            --show-fixes \
+            --statistics \
+            --no-cache
 
       - name: Ruff (format check)
-        run: ruff format --check src tests
+        run: |
+          ruff format --check --diff src tests --no-cache
 
       - name: Mypy
-        run: mypy src/vulcan
+        run: |
+          mypy src/vulcan \
+            --show-error-codes \
+            --show-error-context \
+            --show-column-numbers \
+            --pretty
         continue-on-error: true
 
       - name: Pytest
-        run: pytest --cov=vulcan --cov-report=term-missing
+        run: |
+          pytest \
+            -vv \
+            -rA \
+            --showlocals \
+            --tb=short \
+            --color=yes \
+            --durations=25 \
+            --cov=vulcan \
+            --cov-report=term-missing
 
   audit:
     name: dependency audit

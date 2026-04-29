@@ -36,6 +36,7 @@ _VALID_TCP_FLAGS = set("FSRPAUECN")
 
 # session manager
 
+
 class VulcanSessionManager:
     """Aggregates a list of packet definitions into ordered Scapy packets"""
 
@@ -719,6 +720,7 @@ class Vulcan_DNS(DNS):
 
 
 # HTTP frames
+
 
 def _normalize_headers(value: Any) -> dict[str, str]:
     """Accept dict, list of strings, or pipe-separated string"""

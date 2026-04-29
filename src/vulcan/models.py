@@ -27,6 +27,7 @@ HTTPVersion = Literal["1.0", "1.1", "2"]
 
 class _StrictModel(BaseModel):
     """Ban unknown keys"""
+
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 

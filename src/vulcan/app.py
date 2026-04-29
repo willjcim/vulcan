@@ -67,6 +67,7 @@ def create_app(settings: Settings | None = None) -> Flask:
 # request IDs + auth
 _REQUEST_ID_HEADER = "X-Request-ID"
 
+
 def _register_request_lifecycle(app: Flask, settings: Settings) -> None:
     @app.before_request
     def _before():
