@@ -1,14 +1,38 @@
-version: '3.8'
-
 services:
   vulcan:
     container_name: vulcan
     build:
       context: .
       dockerfile: docker/Dockerfile
-    env_file: docker/vulcan.env
+    environment:
+      VULCAN_LOG_LEVEL: ${VULCAN_LOG_LEVEL:-INFO}
+      VULCAN_JSON_LOGS: ${VULCAN_JSON_LOGS:-true}
+      VULCAN_CORS_ORIGINS: ${VULCAN_CORS_ORIGINS:-}
+      VULCAN_API_TOKEN: ${VULCAN_API_TOKEN:-}
+      VULCAN_MAX_CONTENT_LENGTH: ${VULCAN_MAX_CONTENT_LENGTH:-1048576}
+      VULCAN_RATE_LIMIT_DEFAULT: ${VULCAN_RATE_LIMIT_DEFAULT:-60/minute}
+      VULCAN_RATE_LIMIT_CREATE_PCAP: ${VULCAN_RATE_LIMIT_CREATE_PCAP:-10/minute}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
+      GUNICORN_THREADS: ${GUNICORN_THREADS:-4}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-30}
     ports:
-      - 9200:5000
+      - "9200:5000"
     restart: always
-    volumes:
-      - ./output:/app/output
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/healthz', timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

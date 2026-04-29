@@ -4,35 +4,72 @@
 
 Vulcan is a Network Traffic simulation tool that can be used to generate text-based hexdumps of packets as well as native libpcap format packet captures.
 
-## Endpoints
+## Quickstart
 
-### /get-uptime
+### Local development
 
-#### GET
-
-Returns the Vulcan service's current uptime.
-
-**Returns:** JSON
-
-```json
-{
-    "success": "uptime: 21 days, 0:32:59.665307"
-}
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+pip install -e .
+pytest
+python -m vulcan.app  # local dev server on http://127.0.0.1:5000
 ```
 
-### /create-pcap
+### Docker
 
-#### POST
+```bash
+docker compose up --build
+curl http://localhost:9200/healthz
+```
 
-**Accepts:** JSON as a list of packet objects.
+## Configuration
 
-**Returns:** .pcap file.
+All knobs are environment variables (see [`docker/vulcan.env.example`](docker/vulcan.env.example)):
 
-**Error Returns:** JSON
+| Variable | Default | Description |
+| --- | --- | --- |
+| `VULCAN_LOG_LEVEL` | `INFO` | Standard Python log level |
+| `VULCAN_JSON_LOGS` | `true` | Emit logs as JSON (recommended for production) |
+| `VULCAN_CORS_ORIGINS` | _empty_ | Comma-separated allow-list, empty disables cross-origin browser access |
+| `VULCAN_API_TOKEN` | _empty_ | If set, every request must send `X-API-Token: <token>` or `Authorization: Bearer <token>` |
+| `VULCAN_MAX_CONTENT_LENGTH` | `1048576` | Max request body in bytes (1 MiB) |
+| `VULCAN_RATE_LIMIT_DEFAULT` | `60/minute` | Default per-IP rate limit |
+| `VULCAN_RATE_LIMIT_CREATE_PCAP` | `10/minute` | Per-IP rate limit for `/create-pcap` |
+| `VULCAN_RATE_LIMIT_STORAGE_URI` | `memory://` | Set to `redis://...` for multi-worker deployments |
+
+## Endpoints
+
+### `GET /healthz`
+
+Liveness probe
+
+```json
+{ "status": "ok", "version": "0.2.0" }
+```
+
+### `GET /get-uptime`
+
+Returns the service's current uptime.
+
+```json
+{ "success": "uptime: 21 days, 0:32:59.665307" }
+```
+
+### `POST /create-pcap`
+
+**Accepts:** JSON as a list of packet objects
+
+**Returns:** PCAP file (`Content-Type: application/vnd.tcpdump.pcap`)
+
+**Error responses:** JSON of the form
 
 ```json
 {
-    "error": "Failed to assemble packet data: <error_data>"
+  "error": "Request validation failed.",
+  "details": [{ "loc": ["0", "evil"], "msg": "Extra inputs are not permitted", "type": "extra_forbidden" }],
+  "request_id": "abf3eb0f3294f944"
 }
 ```
 
@@ -54,11 +91,11 @@ Returns the Vulcan service's current uptime.
 }
 ```
 
-**Frame Object:** At least one transport from the optional frame objects is required to create the packet.
+**Frame Object:** At least one transport from the optional frame objects is required to create the packet
 
 ### Frame Objects
 
-Frames will accept any number of args that may be passed to the corresponding Scapy class.
+Frames will accept any number of args that may be passed to the corresponding Scapy class
 
 #### Examples
 

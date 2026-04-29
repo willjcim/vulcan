@@ -167,3 +167,17 @@ cython_debug/
 #.idea/
 
 output/*
+
+# env files
+docker/vulcan.env
+.env
+
+# OS junk
+.DS_Store
+
+# lockfiles
+*.lock
+
+# IDE
+.idea/
+.vscode/
