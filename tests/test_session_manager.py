@@ -93,7 +93,7 @@ class TestTcpAutofill:
             os.unlink(path)
 
         flags = [int(p[TCP].flags) for p in scapy_packets if p.haslayer(TCP)]
-        # we're expecting SYN(2) -> SYN/ACK(18) -> ACK(16) -> PSH/ACK(24) -> ACK(16) -> FIN/ACK(17) -> ACK(16) once stream is flushed
+        # we're expecting SYN(2) -> SYN/ACK(18) -> ACK(16) -> PSH/ACK(24) -> ACK(16) -> FIN/ACK(17) -> ACK(16)
         assert flags[0] == 0x02
         assert flags[1] == 0x12
         assert flags[2] == 0x10
